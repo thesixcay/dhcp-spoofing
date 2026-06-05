@@ -18,7 +18,7 @@ También se muestra cómo mitigar este ataque mediante la implementación de **D
 ---
 
 # Topología
-
+<img width="441" height="434" alt="photo_2026-06-05_07-37-13" src="https://github.com/user-attachments/assets/8ca9301d-6500-4526-967b-6740276f816d" />
 
 # Configuración del Router DHCP Legítimo (R2)
 
@@ -77,7 +77,7 @@ ip addr show eth0
 # Ejecución del Ataque
 
 En Kali Linux:
-
-En la máquina Windows:
+<img width="676" height="240" alt="image" src="https://github.com/user-attachments/assets/5050d243-f8a4-4d12-8565-49770c28db6e" />
 
 La víctima utilizará al atacante como puerta de enlace predeterminada.
+<img width="719" height="310" alt="image" src="https://github.com/user-attachments/assets/cbe60336-e9ac-48ab-b347-ece56c34341c" />
